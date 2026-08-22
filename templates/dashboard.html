@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            width: 220px;
+            background: #222;
+            padding: 30px 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar .btn {
+            display: block;
+            padding: 14px;
+            margin-bottom: 12px;
+            text-decoration: none;
+            color: white;
+            background: #333;
+            border-radius: 6px;
+            text-align: left;
+        }
+
+        .sidebar .btn:hover {
+            background: #444;
+        }
+
+        /* Main Area */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .welcome {
+            margin-bottom: 20px;
+        }
+
+        .welcome h1 {
+            margin: 0 0 8px 0;
+        }
+
+        .welcome p {
+            color: #555;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            width: 100%;
+            height: calc(100vh - 150px);
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: #222;
+            color: white;
+            text-align: center;
+        }
+
+        .chat-header h2 {
+            margin: 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            line-height: 1.5;
+        }
+
+        .ai-message {
+            margin-right: auto;
+            background: #f1f1f1;
+        }
+
+        .message-input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .send-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #222;
+            color: white;
+        }
+
+        .send-button:hover {
+            opacity: 0.8;
+        }
+
+        .user-message {
+            margin-left: auto;
+            background: #e8e8e8;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+
+        <h2>Dashboard</h2>
+
+        <a class="btn" href="{% url 'profile' %}">
+            My Profile
+        </a>
+
+        <a class="btn" href="{% url 'edit_profile' %}">
+            Edit Profile
+        </a>
+
+        <a class="btn" href="{% url 'logout' %}">
+            Logout
+        </a>
+
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <div class="welcome">
+            <h1>Welcome, {{ request.user.name }} 👋</h1>
+
+            
+        </div>
+
+
+        <!-- Chat Interface -->
+        <div class="chat-container">
+
+            <div class="chat-header">
+                <h2>AI Chatbot 🤖</h2>
+            </div>
+
+            <div class="chat-messages">
+
+                <div class="message ai-message">
+                    Hello! How can I help you?
+                </div>
+
+                {% for chat in chat_messages %}
+
+                    <div class="message user-message">
+                        {{ chat.message }}
+                    </div>
+
+                    {% if chat.response %}
+                        <div class="message ai-message">
+                            {{ chat.response }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+            </div>
+
+            <form class="message-input-area" method="POST" action="{% url 'chat' %}">
+
+                {% csrf_token %}
+
+                <input
+                    type="text"
+                    name="message"
+                    class="message-input"
+                    placeholder="Ask something..."
+                    required
+                >
+
+                <button type="submit" class="send-button">
+                    Send
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

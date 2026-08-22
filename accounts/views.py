@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import User
+from .models import User, Profile, ChatMessage
 
 def register(request):
     if request.method == "POST":
@@ -19,6 +19,7 @@ def register(request):
             name=name,
             password=password
         )
+        Profile.objects.create(user=user)
 
         login(request, user)
 
@@ -49,6 +50,57 @@ def user_login(request):
 
 @login_required
 def dashboard(request):
+    chat_messages = ChatMessage.objects.filter(
+        user=request.user
+    ).order_by("created_at")
+
+    return render(request, "dashboard.html", {
+        "chat_messages": chat_messages
+    })
+
+@login_required
+def profile(request):
+    profile = request.user.profile
+
+    return render(request, "profile.html", {
+        "profile": profile
+    })
+
+@login_required
+def edit_profile(request):
+    profile = request.user.profile
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        phone = request.POST.get("phone")
+        city = request.POST.get("city")
+
+        request.user.name = name
+        request.user.save()
+
+        profile.phone = phone
+        profile.city = city
+        profile.save()
+
+        return redirect("profile")
+
+    return render(request, "edit_profile.html", {
+        "profile": profile
+    })
+
+@login_required
+def chat(request):
+    if request.method == "POST":
+        message = request.POST.get("message")
+
+        if message:
+            ChatMessage.objects.create(
+                user=request.user,
+                message=message
+            )
+
+        return redirect("dashboard")
+
     return render(request, "dashboard.html")
 
 def logout_view(request):

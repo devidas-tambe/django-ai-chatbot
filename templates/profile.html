@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Profile</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .profile-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        .profile-container h1 {
+            margin-top: 0;
+        }
+
+        .profile-item {
+            margin: 15px 0;
+        }
+
+        .profile-item strong {
+            display: inline-block;
+            width: 80px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="profile-container">
+
+        <h1>My Profile</h1>
+
+        <div class="profile-item">
+            <strong>Name:</strong>
+            {{ request.user.name }}
+        </div>
+
+        <div class="profile-item">
+            <strong>Email:</strong>
+            {{ request.user.email }}
+        </div>
+
+        <div class="profile-item">
+            <strong>Phone:</strong>
+            {{ profile.phone }}
+        </div>
+
+        <div class="profile-item">
+            <strong>City:</strong>
+            {{ profile.city }}
+        </div>
+
+        <a class="btn" href="{% url 'edit_profile' %}">
+            Edit Profile
+        </a>
+
+        <a class="btn" href="{% url 'dashboard' %}">
+            Dashboard
+        </a>
+
+    </div>
+
+</body>
+</html>

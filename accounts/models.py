@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-
+from django.conf import settings
 
 class UserManager(BaseUserManager):
 
@@ -33,3 +33,27 @@ class User(AbstractBaseUser):
 
     class Meta:
         db_table = "user_registration"
+
+class Profile(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="profile"
+    )
+    phone = models.CharField(max_length=15, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return self.user.email
+
+class ChatMessage(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    message = models.TextField()
+    response = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.created_at}"
