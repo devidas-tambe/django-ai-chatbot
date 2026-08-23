@@ -1,0 +1,323 @@
+<style>
+    /* Left Sidebar */
+    .sidebar {
+        width: 220px;
+        background: #222;
+        padding: 30px 15px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar h2 {
+        color: white;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .sidebar .btn {
+        display: block;
+        padding: 14px;
+        margin-bottom: 12px;
+        text-decoration: none;
+        color: white;
+        background: #333;
+        border-radius: 6px;
+        text-align: left;
+    }
+
+    .sidebar .btn:hover {
+        background: #444;
+    }
+
+    /* Conversations */
+    .conversation-list {
+        margin-top: 20px;
+    }
+
+    .conversation-list h3 {
+        color: #aaa;
+        font-size: 14px;
+        margin: 0 0 10px 5px;
+    }
+
+    .conversation-item {
+        display: block;
+        padding: 10px;
+        margin-bottom: 5px;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+    }
+
+    .conversation-item:hover {
+        background: #333;
+    }
+
+    .no-chats {
+        color: #777;
+        font-size: 13px;
+        padding-left: 5px;
+    }
+
+    /* Right Click Menu */
+    .context-menu {
+        display: none;
+        position: fixed;
+        width: 150px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 5px;
+        z-index: 9999;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .context-menu button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background: white;
+        text-align: left;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    .context-menu button:hover {
+        background: #f1f1f1;
+    }
+
+    .context-menu .delete-option {
+        color: #d00;
+    }
+    .conversation-item.active {
+        background: #444;
+        font-weight: bold;
+    }
+
+</style>
+
+
+<div class="sidebar">
+
+    <h2>Dashboard</h2>
+
+    <a class="btn" href="{% url 'new_chat' %}">
+        + New Chat
+    </a>
+
+    <a class="btn" href="{% url 'profile' %}">
+        My Profile
+    </a>
+
+    <a class="btn" href="{% url 'edit_profile' %}">
+        Edit Profile
+    </a>
+
+    <a class="btn" href="{% url 'logout' %}">
+        Logout
+    </a>
+
+
+    <!-- Conversations -->
+    <div class="conversation-list">
+
+        <h3>Chats</h3>
+
+        {% for conversation in conversations %}
+
+            <a
+                href="{% url 'chat_conversation' conversation.id %}"
+                class="conversation-item {% if current_conversation and current_conversation.id == conversation.id %}active{% endif %}"
+                data-id="{{ conversation.id }}"
+                data-title="{{ conversation.title }}"
+            >
+                {{ conversation.title }}
+            </a>
+
+        {% empty %}
+
+            <p class="no-chats">
+                No chats yet
+            </p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- Custom Right Click Menu -->
+
+<div class="context-menu" id="contextMenu">
+
+    <button id="renameChat">
+        ✏ Rename Chat
+    </button>
+
+    <button id="deleteChat" class="delete-option">
+        🗑 Delete Chat
+    </button>
+
+</div>
+
+
+<script>
+
+    const contextMenu = document.getElementById("contextMenu");
+
+    let selectedConversationId = null;
+    let selectedConversationTitle = null;
+
+
+    /*
+     * Right click on conversation
+     */
+    document.querySelectorAll(".conversation-item").forEach(function(chat) {
+
+        chat.addEventListener("contextmenu", function(event) {
+
+            event.preventDefault();
+
+            selectedConversationId = chat.dataset.id;
+            selectedConversationTitle = chat.dataset.title;
+
+            contextMenu.style.display = "block";
+
+            contextMenu.style.left = event.clientX + "px";
+            contextMenu.style.top = event.clientY + "px";
+
+        });
+
+    });
+
+
+    /*
+     * Rename Chat
+     */
+    document.getElementById("renameChat").addEventListener("click", function() {
+
+        if (!selectedConversationId) {
+            return;
+        }
+
+        const newTitle = prompt(
+            "Enter new chat name:",
+            selectedConversationTitle
+        );
+
+        if (newTitle && newTitle.trim() !== "") {
+
+            const form = document.createElement("form");
+
+            form.method = "POST";
+            form.action =
+                `/chat/${selectedConversationId}/rename/`;
+
+            const csrfToken = document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+            );
+
+            if (csrfToken) {
+
+                const csrfInput = document.createElement("input");
+
+                csrfInput.type = "hidden";
+                csrfInput.name = "csrfmiddlewaretoken";
+                csrfInput.value = csrfToken.value;
+
+                form.appendChild(csrfInput);
+            }
+
+            const titleInput = document.createElement("input");
+
+            titleInput.type = "hidden";
+            titleInput.name = "title";
+            titleInput.value = newTitle.trim();
+
+            form.appendChild(titleInput);
+
+            document.body.appendChild(form);
+
+            form.submit();
+        }
+
+        contextMenu.style.display = "none";
+
+    });
+
+
+    /*
+     * Delete Chat
+     */
+    document.getElementById("deleteChat").addEventListener("click", function() {
+
+        if (!selectedConversationId) {
+            return;
+        }
+
+        const confirmDelete = confirm(
+            "Are you sure you want to delete this chat?"
+        );
+
+        if (confirmDelete) {
+
+            const form = document.createElement("form");
+
+            form.method = "POST";
+
+            form.action =
+                `/chat/${selectedConversationId}/delete/`;
+
+            const csrfToken = document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+            );
+
+            if (csrfToken) {
+
+                const csrfInput = document.createElement("input");
+
+                csrfInput.type = "hidden";
+                csrfInput.name = "csrfmiddlewaretoken";
+                csrfInput.value = csrfToken.value;
+
+                form.appendChild(csrfInput);
+            }
+
+            document.body.appendChild(form);
+
+            form.submit();
+
+        }
+
+        contextMenu.style.display = "none";
+
+    });
+
+
+    /*
+     * Close menu when clicking anywhere else
+     */
+    document.addEventListener("click", function() {
+
+        contextMenu.style.display = "none";
+
+    });
+
+
+    /*
+     * Close menu when scrolling
+     */
+    document.addEventListener("scroll", function() {
+
+        contextMenu.style.display = "none";
+
+    });
+
+</script>

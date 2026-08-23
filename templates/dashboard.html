@@ -19,36 +19,6 @@
             min-height: 100vh;
         }
 
-        /* Left Sidebar */
-        .sidebar {
-            width: 220px;
-            background: #222;
-            padding: 30px 15px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar h2 {
-            color: white;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .sidebar .btn {
-            display: block;
-            padding: 14px;
-            margin-bottom: 12px;
-            text-decoration: none;
-            color: white;
-            background: #333;
-            border-radius: 6px;
-            text-align: left;
-        }
-
-        .sidebar .btn:hover {
-            background: #444;
-        }
-
         /* Main Area */
         .main-content {
             flex: 1;
@@ -108,6 +78,12 @@
             background: #f1f1f1;
         }
 
+        .user-message {
+            margin-left: auto;
+            background: #e8e8e8;
+            text-align: right;
+        }
+
         .message-input-area {
             display: flex;
             padding: 15px;
@@ -135,12 +111,6 @@
         .send-button:hover {
             opacity: 0.8;
         }
-
-        .user-message {
-            margin-left: auto;
-            background: #e8e8e8;
-            text-align: right;
-        }
     </style>
 </head>
 
@@ -148,24 +118,8 @@
 
 <div class="dashboard">
 
-    <!-- Left Sidebar -->
-    <div class="sidebar">
-
-        <h2>Dashboard</h2>
-
-        <a class="btn" href="{% url 'profile' %}">
-            My Profile
-        </a>
-
-        <a class="btn" href="{% url 'edit_profile' %}">
-            Edit Profile
-        </a>
-
-        <a class="btn" href="{% url 'logout' %}">
-            Logout
-        </a>
-
-    </div>
+    <!-- Navbar -->
+    {% include "navbar.html" %}
 
 
     <!-- Main Content -->
@@ -173,8 +127,6 @@
 
         <div class="welcome">
             <h1>Welcome, {{ request.user.name }} 👋</h1>
-
-            
         </div>
 
 
@@ -184,6 +136,7 @@
             <div class="chat-header">
                 <h2>AI Chatbot 🤖</h2>
             </div>
+
 
             <div class="chat-messages">
 
@@ -202,13 +155,25 @@
                             {{ chat.response }}
                         </div>
                     {% endif %}
+
                 {% endfor %}
 
             </div>
 
-            <form class="message-input-area" method="POST" action="{% url 'chat' %}">
+
+            <form class="message-input-area"
+                  method="POST"
+                  action="{% url 'chat' %}">
 
                 {% csrf_token %}
+
+                {% if conversation %}
+                    <input
+                        type="hidden"
+                        name="conversation_id"
+                        value="{{ conversation.id }}"
+                    >
+                {% endif %}
 
                 <input
                     type="text"
