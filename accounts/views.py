@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import User, Profile, ChatMessage
+from openai import OpenAI
+from django.conf import settings
 
 def register(request):
     if request.method == "POST":
@@ -94,14 +96,24 @@ def chat(request):
         message = request.POST.get("message")
 
         if message:
+            client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+            response = client.responses.create(
+                model="gpt-5-mini",
+                input=message
+            )
+
+            ai_response = response.output_text
+
             ChatMessage.objects.create(
                 user=request.user,
-                message=message
+                message=message,
+                response=ai_response
             )
 
         return redirect("dashboard")
 
-    return render(request, "dashboard.html")
+    return redirect("dashboard")
 
 def logout_view(request):
     logout(request)
