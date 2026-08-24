@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import User, Profile, ChatMessage, Conversation
-from openai import OpenAI
 from django.conf import settings
+from google import genai
+from django.http import JsonResponse
 
 def register(request):
     if request.method == "POST":
@@ -110,6 +111,7 @@ def new_chat(request):
 @login_required
 def chat(request):
     if request.method == "POST":
+
         message = request.POST.get("message")
         conversation_id = request.POST.get("conversation_id")
 
@@ -119,21 +121,38 @@ def chat(request):
                 id=conversation_id,
                 user=request.user
             )
+
             if conversation.title == "New Chat":
                 conversation.title = message[:50]
                 conversation.save()
+
+            client = genai.Client(
+                api_key=settings.GEMINI_API_KEY
+            )
+
+            response = client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=message
+            )
+
+            ai_response = response.text
+
             ChatMessage.objects.create(
                 conversation=conversation,
                 user=request.user,
-                message=message
+                message=message,
+                response=ai_response
             )
 
-            return redirect(
-                "chat_conversation",
-                conversation_id=conversation.id
-            )
+            return JsonResponse({
+                "success": True,
+                "response": ai_response
+            })
 
-    return redirect("dashboard")
+    return JsonResponse({
+        "success": False,
+        "error": "Invalid request."
+    })
 
 @login_required
 def chat_conversation(request, conversation_id):
