@@ -6,7 +6,7 @@ from django.conf import settings
 from google import genai
 from django.http import JsonResponse
 
-def register(request):
+def register(request): 
     if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
