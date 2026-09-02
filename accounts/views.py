@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from .models import User, Profile, ChatMessage, Conversation
 from django.conf import settings
 from google import genai
-from django.http import JsonResponse
+from django.http import JsonResponse 
 
 def register(request): 
     if request.method == "POST":
