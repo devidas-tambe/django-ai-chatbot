@@ -19,7 +19,7 @@ def register(request):
 
         user = User.objects.create_user(
             email=email,
-            name=name,
+            name=name, 
             password=password
         )
         Profile.objects.create(user=user)
