@@ -14,7 +14,7 @@ def register(request):
 
         if User.objects.filter(email=email).exists():
             return render(request, "register.html", {
-                "error": "This email is already registered."
+                "error": "This email is already registered." 
             })
 
         user = User.objects.create_user(
