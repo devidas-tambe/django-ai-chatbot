@@ -10,7 +10,7 @@ def register(request):
     if request.method == "POST": 
         name = request.POST.get("name")
         email = request.POST.get("email")
-        password = request.POST.get("password")
+        password = request.POST.get("password") 
 
         if User.objects.filter(email=email).exists():
             return render(request, "register.html", {
